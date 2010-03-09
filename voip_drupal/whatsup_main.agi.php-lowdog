@@ -1,0 +1,89 @@
+#!/usr/bin/php -q   
+<?php
+/* $Id: whatsup_main.agi.php,v 1.4 2006/11/01 12:03:22 leob Exp $ */
+// #!/usr/bin/php5/bin/php
+
+/**
+ * @file
+ * PHP AGI script that runs the What's Up system
+ *
+ * Note: PHPAGI scripts only run on CLI PHP... They do not work on CGI PHP.
+ *     : Make sure you use PHP 5 for best performance
+ */
+
+
+// Usage:
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// global variables
+// -----------------------------------------------------------------------------
+
+global $configuration_file;
+if (!isset($configuration_file)) {
+  $configuration_file = "whatsup.ini";
+}
+
+$voip_config = parse_ini_file($configuration_file, TRUE);
+$voip_config = $voip_config['voip'];
+
+global  $agi;
+if( !isset( $agi)) {
+  global $configuration_file;
+  if (!isset($configuration_file)) {
+    $configuration_file = "phpagi.ini";
+  }
+  $phpagi_config = parse_ini_file($configuration_file, TRUE);
+  $phpagi_config = $phpagi_config['phpagi'];
+  $phpagi_config_dir = isset($phpagi_config['phpagi_config_dir'])? $phpagi_config['phpagi_config_dir'] : "/etc/asterisk/phpagi.conf";
+	
+   require_once('includes'. DIRECTORY_SEPARATOR . 'phpagi.php');
+   $agi = new AGI($phpagi_config_dir);
+}
+
+
+// -----------------------------------------------------------------------------
+// include required files
+// -----------------------------------------------------------------------------
+
+// include Drupal-specific files
+
+foreach (array( 'error_handler.inc', 'whatsup_client.inc') as $file) {
+   require_once('includes'. DIRECTORY_SEPARATOR .$file);
+}
+eh_log("(whatsup config) file: $configuration_file, config: " . print_r($voip_config, TRUE));
+
+// -----------------------------------------------------------------------------
+// main functionality
+// -----------------------------------------------------------------------------
+
+  // Retrieve mandatory variables associated with the server
+
+/*
+  $xmlrpc_url = _read_mandatory_variable( 'DRUPAL_XMLRPC_URL');
+*/
+
+  $voip_server = $voip_config['voip_server'];
+// $voip_server = $voip_server . '?XDEBUG_SESSION_START=whatsup';
+
+  // run the What's Up system
+
+eh_log("--------------------------------");
+  $r = whatsup_main($voip_server);
+eh_log("--------------------------------");
+
+  if ($r) {	// in case of success...
+  
+    // set the return value to 1
+    $agi->set_variable( "AB_RESULT", 1);
+
+  } else {	// in case of failure...
+
+    // set the return value to 0
+    $agi->set_variable( "AB_RESULT", 0);
+    $agi->set_variable( "AB_ERROR_MSG", eh_error_msg());
+  }
+
+  exit;  
+
+?>
