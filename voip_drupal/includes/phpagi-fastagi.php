@@ -65,6 +65,9 @@ $fastagi->conlog("$script exists and is executable.");
   {
     $owner = fileowner($script);
     $group = filegroup($script);
+$fastagi->conlog("current uid: ". posix_getuid());
+$fastagi->conlog("current gid: ". posix_getgid());
+$fastagi->conlog("script owner: $owner, group: $group");
     if(!posix_setgid($group) || !posix_setegid($group) || !posix_setuid($owner) || !posix_seteuid($owner))
     {
       $fastagi->conlog("failed to lower privileges.");
