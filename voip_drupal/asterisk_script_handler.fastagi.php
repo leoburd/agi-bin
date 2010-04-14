@@ -36,8 +36,8 @@ if( !isset( $agi)) {
    $agi = $fastagi;
 }
 
-$fastagi->verbose("voip configuration file: $configuration_file");
-$fastagi->verbose("configuration contents: " . print_r($voip_config, true));
+//$fastagi->verbose("voip configuration file: $configuration_file");
+//$fastagi->verbose("configuration contents: " . print_r($voip_config, true));
 
 // $fastagi->verbose("This is fastagi: " . print_r($fastagi, true));
 // $fastagi->verbose("This is agi: " . print_r($agi, true));
@@ -89,8 +89,8 @@ eh_log("--------------------------------");
   if ($r) {	// in case of success...
     $agi->set_variable("VD_RESULT",1);
     $agi->set_variable("VD_ERROR_MSG",'everything is alright');
-  } else {      // in case of failure...
 
+  } else {      // in case of failure...
     // set the return value to 0
     $agi->set_variable("VD_RESULT", 0);
     $agi->set_variable("VD_ERROR_MSG",eh_error_msg());

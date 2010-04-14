@@ -137,8 +137,15 @@ eh_log("asterisk_script_handler($server, $script_name, $options)");
   // record statistics
   voip_log($wu_voip_server, $wu_user_info, 'user', 'dialed in');
   
+vio_say('hi. this is a test');
+$channel_status = $agi->channel_status();
+eh_log('Channel status before beep: ' . print_r($channel_status, TRUE));
+
   // start interacting with the caller
   vio_beep();
+$channel_status = $agi->channel_status();
+eh_log('Channel status after beep: ' . print_r($channel_status, TRUE));
+
   vio_say(v('Welcome to the Voip Drupal system.'));
 
   // start music on hold
