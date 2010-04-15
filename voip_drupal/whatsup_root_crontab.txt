@@ -1,3 +1,0 @@
-* * * * *  /usr/bin/php -q /data/var/lib/asterisk/agi-bin/lawrence/asa_upload_entries_from_queue.php
-0 22 * * *  /usr/bin/php -q /data/var/lib/asterisk/agi-bin/lawrence/asa_cache_recycle.php
-

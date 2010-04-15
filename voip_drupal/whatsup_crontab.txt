@@ -1,3 +1,0 @@
-0   *   *   *   *   wget -O - -q http://whatsup.media.mit.edu/lawrence/cron.php
-0 22 * * *  /usr/bin/php -q /data/var/lib/asterisk/agi-bin/lawrence/voip_cache_recycle.php
-
