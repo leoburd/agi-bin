@@ -61,7 +61,8 @@ global $wu_user_info;
 // include required files
 // -----------------------------------------------------------------------------
 
-foreach (array( 'voip_client.inc', 'voip_event_client.inc', 'voip_group_client.inc',
+foreach (array( 'voip_api.inc',
+                'voip_client.inc', 'voip_event_client.inc', 'voip_group_client.inc',
                 'voip_io.inc', 'voip_voicemail_client.inc', 'audio_server_api.inc',
                 'error_handler.inc', 'whatsup_voice_manager.inc', 'xmlrpc.inc') as $file) {
     require_once($file);
@@ -135,18 +136,23 @@ eh_log("asterisk_script_handler($server, $script_name, $options)");
   $vio_beep_file = WU_BEEP_FILE;
 
   // record statistics
-  voip_log($wu_voip_server, $wu_user_info, 'user', 'dialed in');
+  // TODO: create a log function at the server
+//  voip_log($wu_voip_server, $wu_user_info, 'user', 'dialed in');
   
 vio_say('hi. this is a test');
-$channel_status = $agi->channel_status();
-eh_log('Channel status before beep: ' . print_r($channel_status, TRUE));
 
   // start interacting with the caller
   vio_beep();
-$channel_status = $agi->channel_status();
-eh_log('Channel status after beep: ' . print_r($channel_status, TRUE));
 
   vio_say(v('Welcome to the Voip Drupal system.'));
+
+  // retrieve script from the server
+  $request_id = 'voip_get_script';
+  $options['script_name'] = $script_name;
+vio_say("about to retrieve script called $script_name.");
+  $result = voip_process_request($voip_server, $request_id, $options);
+// TODO: Process result here!!
+
 
   // start music on hold
   vio_set_music_on_hold_class('whatsup');
