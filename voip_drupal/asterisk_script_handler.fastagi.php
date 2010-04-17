@@ -8,6 +8,8 @@
  * Note: Fast PHPAGI scripts should never start with #!/usr/bin/php ...
  *       they run as CGI PHP
  *     : Make sure you use PHP 5 for best performance
+ *
+ * ATTENTION: make sure this script is owned by ASTERISK:ASTERISK
  */
 
 
