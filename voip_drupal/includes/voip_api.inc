@@ -75,7 +75,10 @@ function voip_api_error_reset() {
  *   array with the options associated with the request
  *
  * @return
- *   array with
+ *   array with the results of the request
+ *
+ *  Note: callers should always check voip_api_error() before analyzing the 
+ *        results of this function.
  */
 function voip_process_request($drupal_server, $request_id, $options=array()) {
   voip_api_error_reset();

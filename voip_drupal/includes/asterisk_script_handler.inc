@@ -110,7 +110,102 @@ define('WU_PROCESSING_FAILURE', -1);
  * @return
  *   boolean TRUE indicates success.  If FALSE, check $eh_error_msg() for explanation.
  */
-function asterisk_script_handler($server, $script_name, $options) {
+function asterisk_script_handler($server, $input_script_name, $input_options=array()) {
+eh_log("entering asterisk_script_handler($server, $input_script_name, $input_options)");
+
+  // set the current voice of the system
+  vt_set_voice(WU_DEFAULT_VOICE_ID);
+  
+
+  $processing = TRUE;
+  $rc = TRUE;
+  $script_name = $input_script_name;
+  $options = $input_options;
+
+  while($processing){
+
+    // retrieve script
+    $request_id = 'voip_get_script';
+    $options['script_name'] = $script_name;
+eh_log("about to call voip_process_request($server, $request_id, " . print_r($options,TRUE) . ")");
+    $result = voip_process_request($server, $request_id, $options);
+eh_log('so far, so good');
+eh_log('result: ' . print_r($result, TRUE));
+
+    // check for processing errors
+    if(voip_api_error()){
+      $processing = FALSE;
+      $rc['status'] = FALSE;
+      $error_msg = "(asterisk script handler): Error retrieving $script_name from $server: "
+        . voip_error_message();
+eh_log($error_msg);
+      $rc['error_msg'] = $error_msg;
+      continue;
+    }
+
+
+    // parse script
+    $script = $result['script_contents'];
+    $parser = xml_parser_create();
+    xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 1);
+    xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
+    xml_parse_into_struct($parser, $script, $values, $tags);
+    xml_parser_free($parser);
+
+    // loop through the script elements
+    for ($i=0, $stop = FALSE; $i<count($values) && !$stop; $i++) {
+      $element = $values[$i];
+      $type = $element['type'];
+      if(($type == 'open') || ($type == 'complete')) {
+eh_log("processing tag: " . $element['tag'] . "\n");
+        switch($element['tag']) {
+          default:
+// vio_say($element['tag']);
+            break;
+
+          case "GOTO":
+            $script_name = $element['value'];
+            $stop = TRUE;
+            break;
+
+          case "HANGUP":
+            // hangup command
+eh_log("about to hangup");
+            $processing = FALSE;
+            $stop = TRUE;
+            break;
+
+          case "SAY":
+            $i++;
+            $element = $values[$i];
+            if($element['tag'] == 'TEXT') {
+              vio_say($element['value']);
+eh_log("say text: " . $element['value']);
+            } else {
+              vio_say('*' . $element['value']);
+eh_log("play file: " . $element['value']);
+            }
+            break;
+        }
+      }
+    }
+
+    // reached the end of the script
+    if($i == count($values)){
+eh_log("end of the script");
+      $processing = FALSE;
+    }
+  }
+
+  // return
+  return $rc;
+}
+
+
+
+
+// =================================
+function old_asterisk_script_handler($server, $script_name, $options) {
 eh_log("asterisk_script_handler($server, $script_name, $options)");
 
   global $agi;
@@ -145,14 +240,6 @@ vio_say('hi. this is a test');
   vio_beep();
 
   vio_say(v('Welcome to the Voip Drupal system.'));
-
-  // retrieve script from the server
-  $request_id = 'voip_get_script';
-  $options['script_name'] = $script_name;
-vio_say("about to retrieve script called $script_name.");
-  $result = voip_process_request($voip_server, $request_id, $options);
-// TODO: Process result here!!
-
 
   // start music on hold
   vio_set_music_on_hold_class('whatsup');
